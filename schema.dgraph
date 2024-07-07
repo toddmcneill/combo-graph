@@ -1,0 +1,15 @@
+xid: string @index(exact) .
+name: string @index(term) .
+uses: [uid] @reverse .
+
+type Combo {
+  xid
+  name
+  uses
+}
+
+type Card {
+  xid
+  name
+  <~uses>
+}
