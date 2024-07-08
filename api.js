@@ -8,14 +8,12 @@ async function fetchPage(url) {
 
   try {
     const response = await fetch(url)
-
     if (!response.ok) {
       console.error('HTTP Error: ', response.status, url)
+      return
     }
     const json = await response.json()
-
     cache.write(url, JSON.stringify(json))
-
     return json
   } catch (err) {
     console.error('Fetch Error: ', err)

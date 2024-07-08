@@ -1,5 +1,6 @@
 const dgraph = require("dgraph-js")
 const grpc = require("@grpc/grpc-js")
+const { DGRAPH_TYPES } = require('./enums')
 
 const clientStub = new dgraph.DgraphClientStub(
   // addr: optional, default: "localhost:9080"
@@ -39,7 +40,7 @@ async function write(nquads) {
   }
 }
 
-async function upsert(obj) {
+async function upsertObject(obj) {
   const { id, type, ...objRest } = obj
   const query = `
     {
@@ -49,7 +50,8 @@ async function upsert(obj) {
   const mu = new dgraph.Mutation()
   const nquads = [
     `uid(node) <xid> "${sanitizeValue(id)}" .`,
-    `uid(node) <dgraph.type> "${sanitizeValue(type)}" .`
+    `uid(node) <dgraph.type> "${sanitizeValue(type)}" .`,
+    `uid(node) <dgraph.type> "${DGRAPH_TYPES.NODE}" .`,
   ]
   nquads.push(...Object.keys(objRest).map(key => `uid(node) <${key}> "${sanitizeValue(objRest[key])}".`))
   mu.setSetNquads(nquads.join('\n'))
@@ -62,7 +64,7 @@ async function upsert(obj) {
   return dgraphClient.newTxn().doRequest(req)
 }
 
-async function bulkUpsert(objs) {
+async function bulkUpsertObjects(objs) {
   const queries = []
   const nquads = []
   for (let i = 0; i < objs.length; i++) {
@@ -70,6 +72,7 @@ async function bulkUpsert(objs) {
     queries.push(`node${i} as var(func: eq(xid, "${sanitizeValue(id)}"))`)
     nquads.push(`uid(node${i}) <xid> "${sanitizeValue(id)}" .`)
     nquads.push(`uid(node${i}) <dgraph.type> "${sanitizeValue(type)}" .`)
+    nquads.push(`uid(node${i}) <dgraph.type> "${DGRAPH_TYPES.NODE}" .`)
     nquads.push(...Object.keys(objRest).map(key => `uid(node${i}) <${key}> "${sanitizeValue(objRest[key])}".`))
   }
   const query = `
@@ -107,6 +110,22 @@ async function createEdge(sourceId, targetId, edge) {
   await dgraphClient.newTxn().doRequest(req)
 }
 
+async function upsert(query, nquads, condition) {
+  const mu = new dgraph.Mutation()
+  mu.setSetNquads(nquads.join('\n'))
+
+  if (condition) {
+    mu.setCond(condition)
+  }
+
+  const req = new dgraph.Request()
+  req.setQuery(query)
+  req.setMutationsList([mu])
+  req.setCommitNow(true)
+
+  return dgraphClient.newTxn().doRequest(req)
+}
+
 async function query(queryString, variables = {}) {
   const res = await dgraphClient.newTxn().queryWithVars(queryString, variables)
   return res.getJson()
@@ -124,9 +143,10 @@ module.exports = {
   dropAll,
   setSchema,
   write,
-  upsert,
-  bulkUpsert,
+  upsertObject,
+  bulkUpsertObjects,
   createEdge,
+  upsert,
   query,
   close,
 }

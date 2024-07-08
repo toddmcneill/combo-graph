@@ -1,15 +1,13 @@
 const dgraph = require('./dgraph')
 const edhrec = require('./edhrec')
-const db = require("./db")
+const db = require('./db')
 
-async function test() {
+async function run() {
   await dgraph.dropAll()
   await db.setSchema()
 
-  const allEdhrecCombos = await edhrec.fetchAllColorCombos()
-  // console.dir(allEdhrecCombos.slice(0, 1), { depth: 5, color: true})
-
   // Upsert combos
+  const allEdhrecCombos = await edhrec.fetchAllColorCombos()
   await Promise.all(allEdhrecCombos.map(combo => {
     return db.upsertCombo(getComboId(combo), combo.header)
   }))
@@ -25,20 +23,27 @@ async function test() {
   await db.upsertCards(Object.values(keyedCardList))
 
   // Create edges
-  let edgeCount = 0
   await Promise.all(allEdhrecCombos.map(combo => {
     return Promise.all(combo.cardviews.map(({ sanitized }) => {
       return db.setComboUsesCard(getComboId(combo), sanitized)
     }))
   }))
 
-  // const paths = allCombos.map(combo => combo.href)
-  // const comboDetails = await edhrec.fetchAllComboDetails(paths)
-  // console.log('comboDetails:', comboDetails.length)
+  // Cache all combo details
+  const paths = allEdhrecCombos.map(combo => combo.href)
+  await edhrec.fetchAllComboDetails(paths)
+  // TODO: add these to the combo nodes
+
+  // Determine centrality
+  await db.calculateCentrality(50)
 }
 
 function getComboId(combo) {
   return combo.cardviews.map(({ sanitized }) => sanitized).sort().join('_')
 }
 
-test().then(() => process.exit(0))
+run().then(() => {
+    dgraph.close()
+    setTimeout(() => process.exit(0),100)
+  }
+)

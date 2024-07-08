@@ -1,6 +1,7 @@
 xid: string @index(exact) .
 name: string @index(term) .
 uses: [uid] @reverse .
+centrality: float @index(float) .
 
 type Combo {
   xid
@@ -12,4 +13,8 @@ type Card {
   xid
   name
   <~uses>
+}
+
+type Node {
+  centrality
 }

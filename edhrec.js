@@ -16,7 +16,7 @@ async function fetchAllColorCombos() {
 }
 
 function getComboDetailsPageFromPath(path) {
-  return `https://json.edhrec.com/pages${path}`
+  return `https://json.edhrec.com/pages${path}.json`
 }
 
 async function fetchComboDetailsPage(path) {
@@ -27,21 +27,20 @@ async function fetchComboDetailsPage(path) {
 async function fetchAllComboDetails(paths) {
   const comboDetails = []
 
-  const batchSize = 1
+  const batchSize = 10
   for (let i = 0; i < paths.length; i += batchSize) {
-    if (i % 10 === 0) {
-      process.stdout.write(i + '')
-    } else {
-      process.stdout.write('.')
-    }
-    const isCached = await cache.exists(getComboDetailsPageFromPath(paths[i]))
+    const isCached = (await Promise.all(
+      paths.slice(i, i + batchSize).map(
+        path => cache.exists(getComboDetailsPageFromPath(path))
+      )
+    )).every(isCached => isCached)
     if (!isCached) {
-      // If HTTP 403 errors start appearing, the IP address has probably been restricted.
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      // If HTTP 403 errors start appearing, the IP address might have been restricted.
+      await new Promise(resolve => setTimeout(resolve, batchSize * 100))
     }
     const batchPaths = paths.slice(i, i + batchSize)
-    const comboDetails = await Promise.all(batchPaths.map(path => fetchComboDetailsPage(path)))
-    comboDetails.push(...comboDetails)
+    const batchComboDetails = await Promise.all(batchPaths.map(path => fetchComboDetailsPage(path)))
+    comboDetails.push(...batchComboDetails)
   }
 
   return comboDetails

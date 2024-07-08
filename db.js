@@ -15,7 +15,7 @@ async function upsertCombo(id, name) {
     id,
     name,
   }
-  return dgraph.upsert(obj)
+  return dgraph.upsertObject(obj)
 }
 
 async function getAllCombos() {
@@ -37,7 +37,7 @@ async function upsertCard(id, name) {
     id,
     name,
   }
-  return dgraph.upsert(obj)
+  return dgraph.upsertObject(obj)
 }
 
 async function upsertCards(cards) {
@@ -46,11 +46,42 @@ async function upsertCards(cards) {
     id: card.id,
     name: card.name,
   }))
-  return dgraph.bulkUpsert(objs)
+  return dgraph.bulkUpsertObjects(objs)
 }
 
 async function setComboUsesCard(comboId, cardId) {
-  return dgraph.createEdge(comboId, cardId, DGRAPH_EDGES.USES)
+  await dgraph.createEdge(comboId, cardId, DGRAPH_EDGES.USES)
+  await dgraph.createEdge(cardId, comboId, DGRAPH_EDGES.USES)
+}
+
+async function calculateCentrality(iterations = 1) {
+  // Set initial values
+  const initialQuery = `{ node as var(func: type(Node)) @filter(type(Combo) or type(Card)) }`
+  const initialNquads = [`uid(node) <centrality> "1" .`]
+  await dgraph.upsert(initialQuery, initialNquads)
+
+  for (let i = 0; i < iterations; i++) {
+    // Compute new values
+    const computeQuery = `{
+      node as var(func: type(Node)) @filter(type(Combo) or type(Card)) {
+        uses {
+          neighborCentrality as centrality
+        }
+        newCentrality as sum(val(neighborCentrality))
+      }
+    }`
+    const computeNquads = [`uid(node) <centrality> val(newCentrality) .`]
+    await dgraph.upsert(computeQuery, computeNquads)
+
+    // Normalize values between 0 and 1
+    const normalizeQuery = `{
+      node as var(func: has(centrality)) { c as centrality }
+      var() { m as max(val(c)) }
+      var(func: uid(node)) { normalized as math(c / m) }
+    }`
+    const normalizeNquads = [`uid(node) <centrality> val(normalized) .`]
+    await dgraph.upsert(normalizeQuery, normalizeNquads)
+  }
 }
 
 module.exports = {
@@ -60,4 +91,5 @@ module.exports = {
   upsertCard,
   upsertCards,
   setComboUsesCard,
+  calculateCentrality,
 }

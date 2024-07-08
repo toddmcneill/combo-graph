@@ -1,4 +1,5 @@
 const DGRAPH_TYPES = {
+  NODE: 'Node',
   COMBO: 'Combo',
   CARD: 'Card',
 }
