@@ -1,20 +1,43 @@
-xid: string @index(exact) .
+xid: string @index(exact) @unique .
 name: string @index(term) .
-uses: [uid] @reverse .
-centrality: float @index(float) .
-
-type Combo {
-  xid
-  name
-  uses
-}
+oracleId: string .
+oracleText: string .
+colorIdentity: string .
+price: float .
+uncountable: bool .
+description: string .
+produces: [uid] .
+producedBy: [uid] .
+uses: [uid] .
+usedBy: [uid] .
+usedWith: [uid] .
+centrality: float .
 
 type Card {
   xid
   name
-  <~uses>
+  oracleId
+  oracleText
+  colorIdentity
+  price
+  usedBy
+  usedWith
+  centrality
 }
 
-type Node {
-  centrality
+type Feature {
+  xid
+  name
+  uncountable
+  producedBy
+}
+
+type Combo {
+  xid
+  name
+  description
+  colorIdentity
+  price
+  uses
+  produces
 }

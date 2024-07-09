@@ -14,31 +14,33 @@ Run `yarn start`
 
 ## Example Queries
 
-See all cards used in at least 30 combos and which combos they're used in:
+See the top 10 most used cards, how many combos they're used by, and how many cards they're used with:
 ```
 {
-  q(func: type(Card)) @filter(ge(count(~uses), 30)) {
-    xid
+  var(func: type(Card)) {
+    c as count(usedBy)
+    u as count(usedWith)
+  }
+  
+  q(func: type(Card), orderdesc: val(c), first: 10) {
     name
-      ~uses {
-      xid
-      name
-    }
+  	cnt: val(c)
+  	ucnt: val(u) 
   }
 }
 ```
 
-See a specific card, which combos use it, and which other cards those combos use:
+See a specific card, which combos use it, which other cards those combos use, and what those combos produce:
 ```
 {
   q(func: type(Card)) @filter(allofterms(name, "Spike Feeder")) {
-    xid
     name
-    ~uses {
-      xid
+    usedBy {
       name
       uses {
-        xid
+        name
+      }
+      produces {
         name
       }
     }
@@ -46,14 +48,15 @@ See a specific card, which combos use it, and which other cards those combos use
 }
 ```
 
-See all combos and which cards they use
+See all combos, which cards they use, and what features they produce,
 ```
 {
   q(func: type(Combo)) {
-    xid
     name
     uses {
-      xid
+      name
+    }
+    produces {
       name
     }
   }
