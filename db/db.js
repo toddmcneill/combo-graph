@@ -39,8 +39,8 @@ function saveUsedWith(combos) {
   return dgraph.createEdges(edges)
 }
 
-function saveCentrality(centralityByNode) {
-  const objs = Object.entries(centralityByNode).map(([key, value]) => ({
+function saveCentrality(centralityByNodeId) {
+  const objs = Object.entries(centralityByNodeId).map(([key, value]) => ({
     id: key,
     centrality: value
   }))

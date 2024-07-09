@@ -52,10 +52,10 @@ async function storeData() {
 
 async function analyze() {
   console.log('Calcualting Centrality')
-  const centralityByNode = await centrality.calculateCentrality()
+  const centralityByNodeId = await centrality.calculateCentrality()
 
   console.log('Saving Centrality')
-  await db.saveCentrality(centralityByNode)
+  await db.saveCentrality(centralityByNodeId)
 }
 
 run().then(() => {
