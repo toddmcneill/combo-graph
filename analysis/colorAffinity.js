@@ -1,4 +1,5 @@
 const dgraph = require('../db/dgraph')
+const { createNeighborMap, stepNeighborMap, normalizeNeighborMap } = require('./centrality')
 
 const allColors = 'WUBRGC'
 function getAllColorCombinations(str = allColors) {
@@ -57,10 +58,11 @@ async function calculateNodesInIdentityByColorIdentity() {
   return nodesByColorIdentity
 }
 
-async function calculateColorAffinity() {
+async function calculateCommanderColorAffinity() {
   const allColorCombinations = getAllColorCombinations(allColors)
 
-  const resByColorIdentity = {}
+  // Select cards from each color identity and ones they're used with where the other card and the combo joining them also belong to the color identity.
+  const cardsUsedWithByColorIdentity = {}
   await Promise.all(allColorCombinations.map(async colorCombination => {
     const query = `{
       var(func: eq(xid, "colorIdentity-${colorCombination}")) {
@@ -75,26 +77,62 @@ async function calculateColorAffinity() {
 
       ${colorCombination}(func: type(Card)) @filter(uid(${colorCombination}nodes)) {
         id: xid
-        cnt: count(usedWith @filter(uid(usedWith${colorCombination})))
         usedWith @filter(uid(usedWith${colorCombination})) {
           id: xid
         }
       }
     }`
     const res = await dgraph.query(query)
-    resByColorIdentity[colorCombination] = res[colorCombination]
+    cardsUsedWithByColorIdentity[colorCombination] = res[colorCombination]
   }))
 
-  // Set up neighbor map
-  const keyedCardsByColorIdentity = {}
+  // Create neighbor maps for each color identity.
+  const neighborMapByColorIdentity = {}
+  for (let colorCombination in cardsUsedWithByColorIdentity) {
+    neighborMapByColorIdentity[colorCombination] = createNeighborMap(cardsUsedWithByColorIdentity[colorCombination])
+  }
 
-  return keyedCardsByColorIdentity
+  let iterations = 0
+  let maxIterations = 100
+  let threshold = 1e-6
+  let maxChange = Infinity
+  while (maxChange > threshold && iterations < maxIterations) {
+    // Calculate new values.
+    let max = 0
+    for (let colorIdentity in neighborMapByColorIdentity) {
+      const neighborMap = neighborMapByColorIdentity[colorIdentity]
+      const colorMax = stepNeighborMap(neighborMap)
+      max = Math.max(max, colorMax)
+    }
+
+    // Normalize values.
+    maxChange = 0
+    for (let colorIdentity in neighborMapByColorIdentity) {
+      const neighborMap = neighborMapByColorIdentity[colorIdentity]
+      const colorMaxChange = normalizeNeighborMap(neighborMap, max)
+      maxChange = Math.max(maxChange, colorMaxChange)
+    }
+
+    iterations++
+  }
+
+  const query = `{
+    commanders(func: eq(isCommander, true)) {
+      id: xid
+      colorIdentity
+    }
+  }`
+  const { commanders } = await dgraph.query(query)
+
+  const colorAffinityByCommanderId = {}
+  commanders.forEach(({ id, colorIdentity }) => {
+    colorAffinityByCommanderId[id] = neighborMapByColorIdentity[colorIdentity][id].centrality
+  })
+  return colorAffinityByCommanderId
 }
-
-
 
 module.exports = {
   getAllColorCombinations,
   calculateNodesInIdentityByColorIdentity,
-  calculateColorAffinity
+  calculateCommanderColorAffinity
 }

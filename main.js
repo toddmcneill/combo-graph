@@ -8,10 +8,8 @@ const colorAffinity = require('./analysis/colorAffinity')
 const db = require('./db/db')
 
 async function run() {
-  // await storeData()
-  // await analyze()
-
-  const colorAffinityByNodeId = await colorAffinity.calculateColorAffinity()
+  await storeData()
+  await analyze()
 }
 
 async function storeData() {
@@ -82,9 +80,13 @@ async function analyze() {
   console.log('Saving Includes Color Identity')
   await db.saveIncludesColorIdentityOf(nodesInIdentityByCommanderId)
 
-  console.log('Calculating Color Affinity')
-  const colorAffinityByNodeId = await colorAffinity.calculateColorAffinity()
-  console.log('Saving Color Affinity')
+  console.log('Calculating Commander Color Affinity')
+  const colorAffinityByCommanderId = await colorAffinity.calculateCommanderColorAffinity()
+  console.log('Saving Commander Color Affinity')
+  await dgraph.updateObjects(Object.entries(colorAffinityByCommanderId).map(([commanderId, colorAffinity]) => ({
+    id: commanderId,
+    colorAffinity,
+  })))
 }
 
 run().then(() => {

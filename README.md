@@ -69,39 +69,16 @@ All combos, which cards they use, and what features they produce:
 }
 ```
 
-The top 50 most central commanders:
+The top 50 most central cards:
 ```
 {
-  q(func: eq(isCommander, true), orderdesc: centrality, first: 50) {
+  q(func: type(Card), orderdesc: centrality, first: 50) {
     name
     centrality
     colorIdentity
-    count(usedWith)
-    count(usedBy)
+    adjacentCards: count(usedWith)
+    comboCount: count(usedBy)
   }  
-}
-```
-
-The top 50 most central commanders, ordered by the ratio of adjacent combos to adjacent cards, indicating denser combo potential:
-```
-{
-  node as var(func: eq(isCommander, true)) {
-    cub as count(usedBy)
-    cuw as count(usedWith)
-    ratio as math(cuw / max(cub, 1.0))
-  }
-    
-  top50 as var(func: uid(node), orderdesc: centrality, first: 50)
-    
-  q(func: uid(top50), orderdesc: val(ratio)) {
-    xid
-    name
-    colorIdentity
-    oracleText
-    adjacentCards: val(cub)
-    comboCount: val(cuw)
-    val(ratio)
-  }
 }
 ```
 
@@ -118,6 +95,40 @@ A feature and what cards produce it:
     
   q(func: uid(cardName)) @normalize {
     cards: val(cardName)
+  }
+}
+```
+
+Commanders ordered by color affinity which measures how central a commander is to combos and cards in its color identity:
+```
+{
+  q(func: eq(isCommander, true), orderdesc: colorAffinity) {
+    name
+    colorIdentity
+    usedWithCount: count(usedWith)
+  }
+}
+```
+
+The top 50 most central commanders, ordered by the ratio of adjacent combos to adjacent cards, indicating denser combo potential:
+```
+{
+  node as var(func: eq(isCommander, true)) {
+    cub as count(usedBy)
+    cuw as count(usedWith)
+    ratio as math(cuw / max(cub, 1.0))
+  }
+    
+  top50 as var(func: uid(node), orderdesc: colorAffinity, first: 50)
+    
+  q(func: uid(top50), orderdesc: val(ratio)) {
+    xid
+    name
+    colorIdentity
+    oracleText
+    adjacentCards: val(cub)
+    comboCount: val(cuw)
+    val(ratio)
   }
 }
 ```

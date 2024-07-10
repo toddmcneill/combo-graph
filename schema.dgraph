@@ -14,7 +14,7 @@ uses: [uid] .
 usedBy: [uid] .
 usedWith: [uid] .
 centrality: float .
-includesColorIdentityOf: [uid] .
+includesColorIdentityOf: [uid] @reverse .
 colorAffinity: float .
 
 type Card {
