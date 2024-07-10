@@ -16,7 +16,6 @@ async function calculateCentrality() {
   cardsUsedWith.forEach(({ id }) => {
     keyedCards[id] = { id, centrality: 1, neighbors: [] }
   })
-
   cardsUsedWith.forEach(({ id, usedWith }) => {
     usedWith.forEach(({ id: usedWithId }) => {
       keyedCards[id].neighbors.push(keyedCards[usedWithId])

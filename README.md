@@ -14,7 +14,7 @@ Run `yarn start`
 
 ## Example Queries
 
-See the top 10 most used cards, how many combos they're used by, and how many cards they're used with:
+Top 10 most used cards, how many combos they're used by, and how many cards they're used with:
 ```
 {
   var(func: type(Card)) {
@@ -24,31 +24,37 @@ See the top 10 most used cards, how many combos they're used by, and how many ca
   
   q(func: type(Card), orderdesc: val(c), first: 10) {
     name
-  	cnt: val(c)
-  	ucnt: val(u) 
+    cnt: val(c)
+    ucnt: val(u) 
   }
 }
 ```
 
-See a specific card, which combos use it, which other cards those combos use, and what those combos produce:
+A specific card, adjacent cards, and what its combos produce:
 ```
 {
-  q(func: type(Card)) @filter(allofterms(name, "Spike Feeder")) {
-    name
+  var(func: type(Card)) @filter(allofterms(name, "Spike Feeder")) {
+    usedWith {
+      usedWithName as name
+    }
     usedBy {
-      name
-      uses {
-        name
-      }
       produces {
-        name
+        producesName as name
       }
     }
-  }  
+  }
+
+  usedWith(func: uid(usedWithName)) @normalize {
+    name: val(usedWithName)
+  }
+
+  produces(func: uid(producesName)) @normalize {
+    produces: val(producesName)
+  }
 }
 ```
 
-See all combos, which cards they use, and what features they produce,
+All combos, which cards they use, and what features they produce:
 ```
 {
   q(func: type(Combo)) {
@@ -63,6 +69,59 @@ See all combos, which cards they use, and what features they produce,
 }
 ```
 
+The top 50 most central commanders:
+```
+{
+  q(func: eq(isCommander, true), orderdesc: centrality, first: 50) {
+    name
+    centrality
+    colorIdentity
+    count(usedWith)
+    count(usedBy)
+  }  
+}
+```
+
+The top 50 most central commanders, ordered by the ratio of adjacent combos to adjacent cards, indicating denser combo potential:
+```
+{
+  node as var(func: eq(isCommander, true)) {
+    cub as count(usedBy)
+    cuw as count(usedWith)
+    ratio as math(cuw / max(cub, 1.0))
+  }
+    
+  top50 as var(func: uid(node), orderdesc: centrality, first: 50)
+    
+  q(func: uid(top50), orderdesc: val(ratio)) {
+    xid
+    name
+    colorIdentity
+    oracleText
+    adjacentCards: val(cub)
+    comboCount: val(cuw)
+    val(ratio)
+  }
+}
+```
+
+A feature and what cards produce it:
+```
+{  
+  var (func: type(Feature)) @filter(eq(name, "Creatures cannot attack you")) {
+    producedBy {
+      uses {
+        cardName as name
+      }
+    }
+  }
+    
+  q(func: uid(cardName)) @normalize {
+    cards: val(cardName)
+  }
+}
+```
+
 ## TODO
-* Do more data analysis, computing centrality and subgraph size.
-* Maybe pull data from commander spellbook instead.
+* Calculate color affinity
+* Find commanders with large and dense combo card pools in their color identity

@@ -2,12 +2,16 @@ const fs = require("fs");
 const path = require("path");
 const dgraph = require('./db/dgraph')
 const commanderSpellbook = require('./api/commanderSpellbook')
+const scryfall = require('./api/scryfall')
 const centrality = require('./analysis/centrality')
+const colorAffinity = require('./analysis/colorAffinity')
 const db = require('./db/db')
 
 async function run() {
-  await storeData()
-  await analyze()
+  // await storeData()
+  // await analyze()
+
+  const colorAffinityByNodeId = await colorAffinity.calculateColorAffinity()
 }
 
 async function storeData() {
@@ -23,6 +27,13 @@ async function storeData() {
     return { type: 'Card', id, name, oracleId, oracleText, colorIdentity, price }
   }))
   console.log('cards: ', cards.length)
+
+  console.log('Saving Card Data')
+  const cardData = await scryfall.fetchBulkCardData()
+  await dgraph.updateObjects(cardData.map(card => {
+    const { id, imageUri, isCommander } = card
+    return { id, imageUri, isCommander }
+  }))
 
   console.log('Saving Features')
   const features = await commanderSpellbook.fetchAllFeatures()
@@ -51,11 +62,29 @@ async function storeData() {
 }
 
 async function analyze() {
-  console.log('Calcualting Centrality')
-  const centralityByNodeId = await centrality.calculateCentrality()
-
   console.log('Saving Centrality')
-  await db.saveCentrality(centralityByNodeId)
+  const centralityByNodeId = await centrality.calculateCentrality()
+  await dgraph.updateObjects(Object.entries(centralityByNodeId).map(([key, value]) => ({
+    id: key,
+    centrality: value
+  })))
+
+  console.log('Saving Color Identities')
+  const colorCombinations = colorAffinity.getAllColorCombinations()
+  await dgraph.upsertObjects(colorCombinations.map(colorCombination => ({
+    type: 'ColorIdentity',
+    id: `colorIdentity-${colorCombination}`,
+    colorIdentity: colorCombination,
+  })))
+
+  console.log('Calculating Includes Color Identity')
+  const nodesInIdentityByCommanderId = await colorAffinity.calculateNodesInIdentityByColorIdentity()
+  console.log('Saving Includes Color Identity')
+  await db.saveIncludesColorIdentityOf(nodesInIdentityByCommanderId)
+
+  console.log('Calculating Color Affinity')
+  const colorAffinityByNodeId = await colorAffinity.calculateColorAffinity()
+  console.log('Saving Color Affinity')
 }
 
 run().then(() => {

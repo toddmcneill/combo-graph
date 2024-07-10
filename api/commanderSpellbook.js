@@ -26,11 +26,11 @@ async function fetchAllCards() {
   const cards = await fetchAll('https://backend.commanderspellbook.com/cards/')
 
   return cards.filter(card => card.legalities.commander).map(card => ({
-    id: `card-${card.id}`,
+    id: `card-${card.oracleId}`,
     name: card.name,
     oracleId: card.oracleId,
     oracleText: card.oracleText,
-    colorIdentity: card.identity,
+    colorIdentity: card.identity.split('').sort().join(''),
     price: card.prices.cardkingdom,
   }))
 }
@@ -52,9 +52,9 @@ async function fetchAllCombos() {
     id: `combo-${combo.id}`,
     name: combo.uses.map(piece => piece.card.name).join(' : '),
     description: combo.description,
-    colorIdentity: combo.identity,
+    colorIdentity: combo.identity.split('').sort().join(''),
     price: combo.prices.cardkingdom,
-    usesCards: combo.uses.map(uses => `card-${uses.card.id}`),
+    usesCards: combo.uses.map(uses => `card-${uses.card.oracleId}`),
     producesFeatures: combo.produces.map(produces => `feature-${produces.feature.id}`),
   }))
 }

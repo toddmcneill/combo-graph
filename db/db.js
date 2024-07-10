@@ -39,17 +39,16 @@ function saveUsedWith(combos) {
   return dgraph.createEdges(edges)
 }
 
-function saveCentrality(centralityByNodeId) {
-  const objs = Object.entries(centralityByNodeId).map(([key, value]) => ({
-    id: key,
-    centrality: value
-  }))
-  return dgraph.upsertObjects(objs)
+function saveIncludesColorIdentityOf(nodesInIdentityByCommanderId) {
+  const edges = Object.entries(nodesInIdentityByCommanderId).flatMap(([ commanderId, nodeIds ]) => {
+    return nodeIds.map(nodeId => ([commanderId, 'includesColorIdentityOf', nodeId]))
+  })
+  return dgraph.createEdges(edges)
 }
 
 module.exports = {
   saveUses,
   saveProduces,
   saveUsedWith,
-  saveCentrality,
+  saveIncludesColorIdentityOf,
 }
