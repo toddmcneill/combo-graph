@@ -11,7 +11,8 @@
     "dgraph-js": "^21.3.1"
   },
   "scripts": {
-    "start": "node main.js",
+    "seed": "node scripts/seed.js",
+    "seed:force": "IGNORE_CACHE=true node scripts/seed.js",
     "dropall": "node scripts/dropall.js"
   }
 }

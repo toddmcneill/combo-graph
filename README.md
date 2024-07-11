@@ -1,16 +1,18 @@
 # combo-graph
-Discover clustering of MTG cards used in combos by using online combo data
+Discover clustering of MTG cards used in combos by using combo data from [commander spellbook](https://backend.commanderspellbook.com/) augmented with card data from [scryfall](https://scryfall.com/docs/api).
 
 ## Usage
-Use node v22
+* Install [node v22](https://nodejs.org/en/download/package-manager) and [yarn](https://classic.yarnpkg.com/lang/en/docs/install)
+* Install [docker](https://www.docker.com/get-started)
+* Install dependencies with `yarn`
+* Start dgraph with `docker compose up -d`
+* View ratel at http://localhost:8000/
+* Seed data with `yarn seed`
 
-Install dependencies with `yarn`
-
-Start dgraph with `docker compose up -d`
-
-View ratel at http://localhost:8000/
-
-Run `yarn start`
+## Notes
+The first run will download all data and save it to a cache (~1.2GB).    
+Subsequent runs will wipe the database and reseed data using cached values. It will take ~2 minutes.  
+You can ignore the cache (and force redownload of all files) by using `yarn seed:force`.
 
 ## Example Queries
 
@@ -133,7 +135,7 @@ Commanders ordered by color affinity which measures how central a commander is t
 }
 ```
 
-First and second order cards, combos, and features from a given commander:
+First and second order cards, combos, and features in a given commander's color identity:
 ```
 {
   commanderNode as var(func: eq(isCommander, true)) @filter(eq(name, "Chatterfang, Squirrel General")) {

@@ -1,6 +1,7 @@
 const { fetchPage } = require('./api')
+const readline = require('node:readline')
 
-async function fetchAll(startingUrl, shouldLog = false) {
+async function fetchAll(startingUrl) {
   let nextPage = startingUrl
   const PAGE_SIZE = 100
   let pageCount = 0
@@ -11,14 +12,15 @@ async function fetchAll(startingUrl, shouldLog = false) {
     pageCount = pageData.count / PAGE_SIZE
     nextPage = pageData.next
     results.push(...pageData.results)
+
+    readline.cursorTo(process.stdout, 0)
+    readline.clearLine(process.stdout, 1)
+    process.stdout.write(`Download progress: ${((iterations + 1) * 100 / pageCount).toFixed(2)}%`)
     iterations++
-    if (shouldLog) {
-      process.stdout.write(iterations % 10 === 0 ? iterations + '' : '.')
-    }
   } while (nextPage && iterations <= pageCount)
-  if (shouldLog) {
-    console.log('')
-  }
+  readline.cursorTo(process.stdout, 0)
+  readline.clearLine(process.stdout, 1)
+
   return results
 }
 

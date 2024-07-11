@@ -26,8 +26,15 @@ async function setSchema(schema) {
 
 async function upsertObjects(objs) {
   const batchSize= 100
+  const startTime = performance.now()
   for (let s = 0; s * batchSize < objs.length; s++) {
     const slice = objs.slice(s * batchSize, (s * batchSize) + batchSize)
+
+    const progress = Math.min((s + 1) * batchSize / objs.length, 100)
+    const estimatedTimeLeft = Math.abs((((performance.now() - startTime) * objs.length / ((s + 1) * batchSize)) - ((performance.now() - startTime))) / 1000)
+    readline.cursorTo(process.stdout, 0)
+    readline.clearLine(process.stdout, 1)
+    process.stdout.write(`Progress: ${(progress * 100).toFixed(2)}%  Time Left: ${estimatedTimeLeft.toFixed(0)}s`)
 
     const queries = []
     const nquads = []
@@ -54,12 +61,22 @@ async function upsertObjects(objs) {
 
     await dgraphClient.newTxn().doRequest(req)
   }
+
+  readline.cursorTo(process.stdout, 0)
+  readline.clearLine(process.stdout, 1)
 }
 
 async function updateObjects(objs) {
   const batchSize= 100
+  const startTime = performance.now()
   for (let s = 0; s * batchSize < objs.length; s++) {
     const slice = objs.slice(s * batchSize, (s * batchSize) + batchSize)
+
+    const progress = Math.min((s + 1) * batchSize / objs.length, 100)
+    const estimatedTimeLeft = Math.abs((((performance.now() - startTime) * objs.length / ((s + 1) * batchSize)) - ((performance.now() - startTime))) / 1000)
+    readline.cursorTo(process.stdout, 0)
+    readline.clearLine(process.stdout, 1)
+    process.stdout.write(`Progress: ${(progress * 100).toFixed(2)}%  Time Left: ${estimatedTimeLeft.toFixed(0)}s`)
 
     const queries = []
     const mutations = []
@@ -91,6 +108,9 @@ async function updateObjects(objs) {
 
     await dgraphClient.newTxn().doRequest(req)
   }
+
+  readline.cursorTo(process.stdout, 0)
+  readline.clearLine(process.stdout, 1)
 }
 
 async function createEdges(edges) {

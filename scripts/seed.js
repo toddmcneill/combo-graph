@@ -1,11 +1,11 @@
 const fs = require("fs");
 const path = require("path");
-const dgraph = require('./db/dgraph')
-const commanderSpellbook = require('./api/commanderSpellbook')
-const scryfall = require('./api/scryfall')
-const centrality = require('./analysis/centrality')
-const colorAffinity = require('./analysis/colorAffinity')
-const db = require('./db/db')
+const dgraph = require('../db/dgraph')
+const commanderSpellbook = require('../api/commanderSpellbook')
+const scryfall = require('../api/scryfall')
+const centrality = require('../analysis/centrality')
+const colorAffinity = require('../analysis/colorAffinity')
+const db = require('../db/db')
 
 async function run() {
   await storeData()
@@ -14,11 +14,11 @@ async function run() {
 
 async function storeData() {
   await dgraph.dropAll()
-  const filename = path.join(__dirname, 'schema.dgraph')
-  const schema = fs.readFileSync(filename, 'utf-8')
+  const schemaFilename = path.join(__dirname, '../db/schema.dgraph')
+  const schema = fs.readFileSync(schemaFilename, 'utf-8')
   await dgraph.setSchema(schema)
 
-  console.log('Saving Cards')
+  console.log('Saving Cards (Commander Spellbook)')
   const cards = await commanderSpellbook.fetchAllCards()
   await dgraph.upsertObjects(cards.map(card => {
     const { id, name, oracleId, oracleText, colorIdentity, price } = card
@@ -26,14 +26,20 @@ async function storeData() {
   }))
   console.log('cards: ', cards.length)
 
-  console.log('Saving Card Data')
+  console.log('Saving Card Data (Scryfall)')
   const cardData = await scryfall.fetchBulkCardData()
   await dgraph.updateObjects(cardData.map(card => {
-    const { id, imageUri, isCommander } = card
-    return { id, imageUri, isCommander }
+    const { id, isCommander, imageUri, price } = card
+    return {
+      id,
+      isCommander,
+      imageUri,
+      ...(imageUri ? { imageUri } : {}),
+      ...(price ? { price } : {}),
+    }
   }))
 
-  console.log('Saving Features')
+  console.log('Saving Features (Commander Spellbook)')
   const features = await commanderSpellbook.fetchAllFeatures()
   await dgraph.upsertObjects(features.map(feature => {
     const { id, name, uncountable } = feature
@@ -41,7 +47,7 @@ async function storeData() {
   }))
   console.log('features: ', features.length)
 
-  console.log('Saving Combos')
+  console.log('Saving Combos (Commander Spellbook)')
   const combos = await commanderSpellbook.fetchAllCombos()
   await dgraph.upsertObjects(combos.map(combo => {
     const { id, name, description, colorIdentity, price } = combo
@@ -49,13 +55,12 @@ async function storeData() {
   }))
   console.log('combos: ', combos.length)
 
-  console.log('Saving Uses')
+  console.log('Saving Relationships:')
+  console.log('...Uses')
   await db.saveUses(combos)
-
-  console.log('Saving Produces')
+  console.log('...Produces')
   await db.saveProduces(combos)
-
-  console.log('Saving Used With')
+  console.log('...Used With')
   await db.saveUsedWith(combos)
 }
 
