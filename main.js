@@ -75,10 +75,15 @@ async function analyze() {
     colorIdentity: colorCombination,
   })))
 
-  console.log('Calculating Includes Color Identity')
-  const nodesInIdentityByCommanderId = await colorAffinity.calculateNodesInIdentityByColorIdentity()
-  console.log('Saving Includes Color Identity')
-  await db.saveIncludesColorIdentityOf(nodesInIdentityByCommanderId)
+  console.log('Calculating Contains Color Identity')
+  const nodesInIdentityByColorIdentity = await colorAffinity.calculateNodesInIdentityByColorIdentity()
+  console.log('Saving Contains Color Identity')
+  await db.saveContainsColorIdentityOf(nodesInIdentityByColorIdentity)
+
+  console.log('Calculating Matches Color Identity')
+  const nodesMatchingColorIdentity = await colorAffinity.calculateNodesMatchingColorIdentity()
+  console.log('Saving Matches Color Identity')
+  await db.saveMatchesColorIdentity(nodesMatchingColorIdentity)
 
   console.log('Calculating Commander Color Affinity')
   const colorAffinityByCommanderId = await colorAffinity.calculateCommanderColorAffinity()

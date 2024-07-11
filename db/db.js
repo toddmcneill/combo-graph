@@ -39,9 +39,16 @@ function saveUsedWith(combos) {
   return dgraph.createEdges(edges)
 }
 
-function saveIncludesColorIdentityOf(nodesInIdentityByCommanderId) {
-  const edges = Object.entries(nodesInIdentityByCommanderId).flatMap(([ commanderId, nodeIds ]) => {
-    return nodeIds.map(nodeId => ([commanderId, 'includesColorIdentityOf', nodeId]))
+function saveContainsColorIdentityOf(nodesInIdentityByColorIdentity) {
+  const edges = Object.entries(nodesInIdentityByColorIdentity).flatMap(([ colorIdentityId, nodeIds ]) => {
+    return nodeIds.map(nodeId => ([colorIdentityId, 'containsColorIdentityOf', nodeId]))
+  })
+  return dgraph.createEdges(edges)
+}
+
+function saveMatchesColorIdentity(nodesInIdentityByCommanderId) {
+  const edges = Object.entries(nodesInIdentityByCommanderId).flatMap(([ colorIdentityId, nodeIds ]) => {
+    return nodeIds.map(nodeId => ([nodeId, 'matchesColorIdentity', colorIdentityId]))
   })
   return dgraph.createEdges(edges)
 }
@@ -50,5 +57,6 @@ module.exports = {
   saveUses,
   saveProduces,
   saveUsedWith,
-  saveIncludesColorIdentityOf,
+  saveContainsColorIdentityOf,
+  saveMatchesColorIdentity,
 }

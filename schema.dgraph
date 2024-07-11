@@ -14,7 +14,8 @@ uses: [uid] .
 usedBy: [uid] .
 usedWith: [uid] .
 centrality: float .
-includesColorIdentityOf: [uid] @reverse .
+containsColorIdentityOf: [uid] @reverse .
+matchesColorIdentity: [uid] .
 colorAffinity: float .
 
 type Card {
@@ -30,6 +31,7 @@ type Card {
   usedWith
   centrality
   colorAffinity
+  matchesColorIdentity
 }
 
 type Feature {
@@ -52,5 +54,5 @@ type Combo {
 type ColorIdentity {
   xid
   colorIdentity
-  includesColorIdentityOf
+  containsColorIdentityOf
 }

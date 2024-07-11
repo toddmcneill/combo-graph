@@ -58,6 +58,28 @@ async function calculateNodesInIdentityByColorIdentity() {
   return nodesByColorIdentity
 }
 
+async function calculateNodesMatchingColorIdentity() {
+  const query = `{
+    colorIdentities(func: type(ColorIdentity)) {
+      id: xid
+      colorIdentity
+    }
+    nodes(func: has(colorIdentity)) @filter(type(Card) or type(Combo)) {
+      id: xid
+      colorIdentity
+    }
+  }`
+  const { colorIdentities, nodes } = await dgraph.query(query)
+
+  const nodesMatchingColorIdentity = {}
+  colorIdentities.forEach(colorIdentity => {
+    nodesMatchingColorIdentity[colorIdentity.id] = nodes
+      .filter(node => node.colorIdentity === colorIdentity.colorIdentity)
+      .map(node => node.id)
+  })
+  return nodesMatchingColorIdentity
+}
+
 async function calculateCommanderColorAffinity() {
   const allColorCombinations = getAllColorCombinations(allColors)
 
@@ -66,7 +88,7 @@ async function calculateCommanderColorAffinity() {
   await Promise.all(allColorCombinations.map(async colorCombination => {
     const query = `{
       var(func: eq(xid, "colorIdentity-${colorCombination}")) {
-        ${colorCombination}nodes as includesColorIdentityOf
+        ${colorCombination}nodes as containsColorIdentityOf
       }
 
       var(func: uid(${colorCombination}nodes)) {
@@ -134,5 +156,6 @@ async function calculateCommanderColorAffinity() {
 module.exports = {
   getAllColorCombinations,
   calculateNodesInIdentityByColorIdentity,
+  calculateNodesMatchingColorIdentity,
   calculateCommanderColorAffinity
 }

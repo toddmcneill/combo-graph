@@ -99,7 +99,7 @@ async function createEdges(edges) {
   for (let s = 0; s * batchSize < edges.length; s++) {
     const slice = edges.slice(s * batchSize, (s * batchSize) + batchSize)
 
-    const progress = s * batchSize / edges.length
+    const progress = Math.min((s + 1) * batchSize / edges.length, 100)
     const estimatedTimeLeft = Math.abs((((performance.now() - startTime) * edges.length / ((s + 1) * batchSize)) - ((performance.now() - startTime))) / 1000)
     readline.cursorTo(process.stdout, 0)
     readline.clearLine(process.stdout, 1)
@@ -127,7 +127,8 @@ async function createEdges(edges) {
 
     await dgraphClient.newTxn().doRequest(req)
   }
-  console.log('')
+  readline.cursorTo(process.stdout, 0)
+  readline.clearLine(process.stdout, 1)
 }
 
 async function query(queryString, variables = {}) {
