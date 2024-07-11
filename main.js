@@ -95,7 +95,6 @@ async function analyze() {
 }
 
 run().then(() => {
-    dgraph.close()
-    setTimeout(() => process.exit(0),100)
-  }
-)
+  dgraph.close()
+  setTimeout(() => process.exit(0),100)
+})

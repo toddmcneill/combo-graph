@@ -99,17 +99,6 @@ A feature and what cards produce it:
 }
 ```
 
-Commanders ordered by color affinity which measures how central a commander is to combos and cards in its color identity:
-```
-{
-  q(func: eq(isCommander, true), orderdesc: colorAffinity) {
-    name
-    colorIdentity
-    usedWithCount: count(usedWith)
-  }
-}
-```
-
 The top 50 most central commanders, ordered by the ratio of adjacent combos to adjacent cards, indicating denser combo potential:
 ```
 {
@@ -133,6 +122,51 @@ The top 50 most central commanders, ordered by the ratio of adjacent combos to a
 }
 ```
 
-## TODO
-* Calculate color affinity
-* Find commanders with large and dense combo card pools in their color identity
+Commanders ordered by color affinity which measures how central a commander is to combos and cards in its color identity:
+```
+{
+  q(func: eq(isCommander, true), orderdesc: colorAffinity) {
+    name
+    colorIdentity
+    usedWithCount: count(usedWith)
+  }
+}
+```
+
+First and second order cards, combos, and features from a given commander:
+```
+{
+  commanderNode as var(func: eq(isCommander, true)) @filter(eq(name, "Chatterfang, Squirrel General")) {
+    matchesColorIdentity {
+      subgraph as containsColorIdentityOf
+    }
+  }
+    
+  commander(func: uid(commanderNode)) @ignorereflex {
+    name
+    combos1 as usedBy @filter(uid(subgraph)) {
+      features1 as produces
+      cards1 as uses @filter(uid(subgraph)) {
+        combos2 as usedBy @filter(uid(subgraph)) {
+          features2 as produces
+          cards2 as uses @filter(uid(subgraph))
+        }
+      }
+    }
+  }
+
+  cards(func: uid(cards1, cards2)) {
+    name
+    price
+  }
+
+  combos(func: uid(combos1, combos2)) {
+    name
+    description
+  }
+  
+  features(func: uid(features1, features2)) {
+    name
+  }
+}
+```

@@ -1,4 +1,4 @@
-const cache = require('../cache')
+const cache = require('./cache')
 
 async function fetchPage(url, shouldWriteCache = true, shouldReadCache = true) {
   if (shouldReadCache) {

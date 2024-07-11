@@ -11,6 +11,7 @@
     "dgraph-js": "^21.3.1"
   },
   "scripts": {
-    "start": "node main.js"
+    "start": "node main.js",
+    "dropall": "node scripts/dropall.js"
   }
 }
