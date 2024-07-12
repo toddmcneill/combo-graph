@@ -175,4 +175,5 @@ module.exports = {
   createEdges,
   query,
   close,
+  sanitizeValue,
 }

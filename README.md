@@ -84,6 +84,17 @@ The top 50 most central cards:
 }
 ```
 
+Commanders ordered by color affinity which measures how central a commander is to combos and cards in its color identity:
+```
+{
+  q(func: eq(isCommander, true), orderdesc: colorAffinity) {
+    name
+    colorIdentity
+    usedWithCount: count(usedWith)
+  }
+}
+```
+
 A feature and what cards produce it:
 ```
 {  
@@ -105,32 +116,32 @@ The top 50 most central commanders, ordered by the ratio of adjacent combos to a
 ```
 {
   node as var(func: eq(isCommander, true)) {
-    cub as count(usedBy)
-    cuw as count(usedWith)
-    ratio as math(cuw / max(cub, 1.0))
+    combos1 as count(usedBy)
+    cards1 as count(usedWith)
+    usedWith {
+      combosInner as count(usedBy)
+      cardsInner as count(usedWith)
+    }
+    combos2 as sum(val(combosInner))
+    cards2 as sum(val(cardsInner))
+    ratio1 as math(combos1 / max(cards1, 1.0))
+    ratio2 as math((combos1 + combos2) / max((cards1 + cards2), 1.0))
   }
     
   top50 as var(func: uid(node), orderdesc: colorAffinity, first: 50)
     
-  q(func: uid(top50), orderdesc: val(ratio)) {
+  q(func: uid(top50), orderdesc: val(ratio1)) {
     xid
     name
     colorIdentity
     oracleText
-    adjacentCards: val(cub)
-    comboCount: val(cuw)
-    val(ratio)
-  }
-}
-```
-
-Commanders ordered by color affinity which measures how central a commander is to combos and cards in its color identity:
-```
-{
-  q(func: eq(isCommander, true), orderdesc: colorAffinity) {
-    name
-    colorIdentity
-    usedWithCount: count(usedWith)
+    imageUri
+    adjacentCards1: val(cards1)
+    adjacentCards2: val(cards2)
+    comboCount1: val(combos1)
+    comboCount2: val(combos2)
+    val(ratio1)
+    val(ratio2)
   }
 }
 ```

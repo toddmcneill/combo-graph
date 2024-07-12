@@ -13,6 +13,7 @@
   "scripts": {
     "seed": "node scripts/seed.js",
     "seed:force": "IGNORE_CACHE=true node scripts/seed.js",
+    "lookup": "node scripts/lookup.js",
     "dropall": "node scripts/dropall.js"
   }
 }

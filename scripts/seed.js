@@ -5,7 +5,7 @@ const commanderSpellbook = require('../api/commanderSpellbook')
 const scryfall = require('../api/scryfall')
 const centrality = require('../analysis/centrality')
 const colorAffinity = require('../analysis/colorAffinity')
-const db = require('../db/db')
+const db = require('../db')
 
 async function run() {
   await storeData()
