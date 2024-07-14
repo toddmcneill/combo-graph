@@ -6,13 +6,80 @@ Discover clustering of MTG cards used in combos by using combo data from [comman
 * Install [docker](https://www.docker.com/get-started)
 * Install dependencies with `yarn`
 * Start dgraph with `docker compose up -d`
-* View ratel at http://localhost:8000/
 * Seed data with `yarn seed`
+* View ratel at http://localhost:8000/
+* Start server with `yarn start`
+* Access server at http://localhost:3000/api
 
-## Notes
-The first run will download all data and save it to a cache (~1.2GB).    
+### Notes
+The first run of seeding will download all data and save it to a cache (~1.2GB).    
 Subsequent runs will wipe the database and reseed data using cached values. It will take ~2 minutes.  
 You can ignore the cache (and force redownload of all files) by using `yarn seed:force`.
+
+## Endpoints
+
+### /centralCommanders
+#### Usage
+http://localhost:3000/api/centralCommanders
+#### Returns
+The 50 commanders with the highest centrality in their color identity, sorted by the ratio of adjacent combos to adjacent cards.
+```
+[
+  {
+    id
+    name
+    colorIdentity
+    oracleText
+    imageUri
+    comboCount1 // Tier 1 adjacent combos (uses the commander)
+    adjacentCards1 // Tier 1 adjacent cards (share a combo with the commander)
+    comboCount2 // Tier 2 adjacent combos (use cards from tier 1)
+    adjacentCards2 // Tier 2 adjacent cards (share a combo with cards from tier 1)
+    ratio1
+    ratio2
+  }
+]
+```
+
+### /adjacentCards/:commanderId
+#### Usage
+http://localhost:3000/api/adjacentCards/card-b8376cca-ea96-478a-8e98-c4482031300a  
+(Sliver Queen)
+#### Returns
+All adjacent cards for a given commander, ordered by the number of combos they share with that commander
+```
+[
+  {
+    id
+    name
+    price
+    cnt // How many combos this card shares with the commander
+  }
+]
+```
+
+### /suggest/:cardId
+#### Query parameters
+* cardCount - How many cards to return. About 5-10 cards can be calculated per second. Default: 70
+* priceCap - Exclude cards over the given price cap and combos that use those cards.
+* exclude - Exclude cards by id, comma-separated.
+#### Usage
+http://localhost:3000/api/suggest/card-e579a72f-4933-40fe-9e57-96f8d65370bc
+(Ghave, Guru of Spores)
+http://localhost:3000/api/suggest/card-e579a72f-4933-40fe-9e57-96f8d65370bc?priceCap=10&cardCount=30&exclude=card-4d18bcba-a346-445e-a182-6cc30b7e066d,card-8d02b297-97c4-4379-9862-0a462400f66f,card-68e1f7e0-a9b3-437f-8086-0c0cb85f2880
+(Ghave, Guru of Spores, price cap of 100, exclude Ashnod's Altar, Phyrexian Altar, and Krark-Clan Ironworks)
+#### Returns
+```
+{
+  cards: [{ id, name, price}] // In the order they were included.
+  feature: [{ }] // Ordered by the number of paths through complete combos that produce them.
+  totalPrice: int
+  comboCount: int // The number of complete combos present in the suggested card set.
+}
+```
+
+
+
 
 ## Example Queries
 

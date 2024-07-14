@@ -19,17 +19,17 @@ async function getCentralCommanders() {
     top50 as var(func: uid(node), orderdesc: colorAffinity, first: 50)
       
     centralCommanders(func: uid(top50), orderdesc: val(ratio1)) {
-      xid
+      id: xid
       name
       colorIdentity
       oracleText
       imageUri
-      adjacentCards1: val(cards1)
-      adjacentCards2: val(cards2)
       comboCount1: val(combos1)
+      adjacentCards1: val(cards1)
       comboCount2: val(combos2)
-      val(ratio1)
-      val(ratio2)
+      adjacentCards2: val(cards2)
+      ratio1: val(ratio1)
+      ratio2: val(ratio2)
     }
   }`
   return dgraph.query(query)
@@ -74,10 +74,79 @@ async function getAdjacentCardsByCommander(commanderId) {
     })
   })
 
-  return Object.values(cards).sort((a, b) => a.cnt < b.cnt ? -1 : 1).reverse()
+  return Object.values(cards).sort((a, b) => a.cnt < b.cnt ? 1 : -1)
+}
+
+async function getColorIdentityOfCard(cardId){
+  const query = `{
+    q(func: eq(xid, "${sanitizeValue(cardId)}")) {
+      colorIdentity
+    }
+  }`
+  const { q } = await dgraph.query(query)
+  return q[0].colorIdentity
+}
+
+async function getConnectedCombosAndCardsFromCardIds(cardIds, colorIdentity, excludeCardIds) {
+  const excludeCardFilter = dgraph.getFilterList('xid', excludeCardIds, false, true)
+  const query = `{
+    colorIdentity as var(func: type(ColorIdentity)) @filter(eq(colorIdentity, "${sanitizeValue(colorIdentity)}"))
+    
+    var(func: type(Card)) @filter(${dgraph.getFilterList('xid', cardIds)}) {
+      comboIds as usedBy @filter(uid_in(~containsColorIdentityOf, uid(colorIdentity))) {
+        cardIds as uses @filter(uid_in(~containsColorIdentityOf, uid(colorIdentity))${excludeCardIds.length ? ` AND ${excludeCardFilter}` : ''})
+      }
+    }
+    
+    combos(func: uid(comboIds)) {
+      id: xid
+      uses @filter(uid(cardIds)) {
+        id: xid
+        price
+        centrality
+      }
+    }
+  }`
+  const { combos } = await dgraph.query(query)
+  return combos
+}
+
+async function getCards(cardIds) {
+  const query = `{
+    cards(func: type(Card)) @filter(${dgraph.getFilterList('xid', cardIds)}) {
+      id: xid
+      name
+      price
+    }
+  }`
+  const { cards } = await dgraph.query(query)
+  return cards
+}
+
+async function getFeaturesForCombos(comboIds) {
+  const query = `{
+    var(func: type(Combo)) @filter(${dgraph.getFilterList('xid', comboIds)}) {
+      paths as math(1)
+      feature as produces {
+        p as math(paths)
+      }
+    }
+  
+    features(func: uid(feature)) {
+      id: xid
+      name
+      paths: val(p)
+    }
+  }`
+  const { features } = await dgraph.query(query)
+  return features
 }
 
 module.exports = {
   getCentralCommanders,
   getAdjacentCardsByCommander,
+  getColorIdentityOfCard,
+  getConnectedCombosAndCardsFromCardIds,
+  getCards,
+  getFeaturesForCombos,
 }

@@ -3,7 +3,7 @@ const path = require('path')
 const { Buffer } = require('node:buffer')
 const crypto = require('crypto')
 
-const basePath = path.join(__dirname, 'cache')
+const basePath = path.join(__dirname, '..', '..', 'cache')
 
 async function write(key, value) {
   await fs.mkdir(basePath, { recursive: true })

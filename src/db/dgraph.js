@@ -167,6 +167,10 @@ function sanitizeValue(value) {
     .replaceAll('\n', '\\n')
 }
 
+function getFilterList(edge, values, useOr = true, useNot = false) {
+  return values.map(value => `${useNot ? 'NOT ' : ''}eq(${edge}, "${sanitizeValue(value)}")`).join(` ${useOr ? 'OR' : 'AND'} `)
+}
+
 module.exports = {
   dropAll,
   setSchema,
@@ -176,4 +180,5 @@ module.exports = {
   query,
   close,
   sanitizeValue,
+  getFilterList,
 }

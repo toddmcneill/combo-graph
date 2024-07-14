@@ -18,6 +18,6 @@
     "seed:force": "IGNORE_CACHE=true node src/scripts/seed.js",
     "lookup": "node src/scripts/lookup.js",
     "dropall": "node src/scripts/dropall.js",
-    "start": "node --watch-path=./src src/server/index.js"
+    "start": "node --watch-preserve-output --watch-path=./src src/server/index.js"
   }
 }

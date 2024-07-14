@@ -38,9 +38,7 @@ const server = app.listen(config.SERVER_PORT, () => {
 })
 
 function shutdown() {
-  console.log('shutting down')
   server.close(() => {
-    console.log('closed server')
     dgraph.close()
     process.exit(0)
   })
