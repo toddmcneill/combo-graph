@@ -2,7 +2,7 @@ const dgraph = require("dgraph-js")
 const grpc = require("@grpc/grpc-js")
 const readline = require('node:readline')
 const { performance } = require('node:perf_hooks')
-const config = require('../server/config')
+const config = require('../config')
 
 const clientStub = new dgraph.DgraphClientStub(
   `${config.DB_HOST}:${config.DB_PORT}`,

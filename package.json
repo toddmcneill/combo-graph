@@ -14,10 +14,10 @@
     "express-async-errors": "^3.1.1"
   },
   "scripts": {
-    "seed": "node src/scripts/seed.js",
-    "seed:force": "IGNORE_CACHE=true node src/scripts/seed.js",
-    "lookup": "node src/scripts/lookup.js",
-    "dropall": "node src/scripts/dropall.js",
-    "start": "node --watch-preserve-output --watch-path=./src src/server/index.js"
+    "seed": "node server/scripts/seed.js",
+    "seed:force": "IGNORE_CACHE=true node server/scripts/seed.js",
+    "lookup": "node server/scripts/lookup.js",
+    "dropall": "node server/scripts/dropall.js",
+    "start": "node --watch-preserve-output --watch-path=./server server/express/index.js"
   }
 }

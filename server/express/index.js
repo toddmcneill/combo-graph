@@ -1,7 +1,7 @@
 const express = require('express')
 require('express-async-errors')
 const cors = require('cors')
-const config = require('./config')
+const config = require('../config')
 const routes = require('./routes')
 const dgraph = require('../db/dgraph')
 
