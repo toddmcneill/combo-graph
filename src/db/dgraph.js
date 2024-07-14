@@ -2,9 +2,10 @@ const dgraph = require("dgraph-js")
 const grpc = require("@grpc/grpc-js")
 const readline = require('node:readline')
 const { performance } = require('node:perf_hooks')
+const config = require('../server/config')
 
 const clientStub = new dgraph.DgraphClientStub(
-  "localhost:9080",
+  `${config.DB_HOST}:${config.DB_PORT}`,
   grpc.credentials.createInsecure(),
   {'grpc.max_receive_message_length': 8 * 1024 * 1024 * 1024 },
 )

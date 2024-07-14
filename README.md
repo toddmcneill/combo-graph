@@ -5,10 +5,9 @@ Discover clustering of MTG cards used in combos by using combo data from [comman
 * Install [node v22](https://nodejs.org/en/download/package-manager) and [yarn](https://classic.yarnpkg.com/lang/en/docs/install)
 * Install [docker](https://www.docker.com/get-started)
 * Install dependencies with `yarn`
-* Start dgraph with `docker compose up -d`
+* Start dgraph and server with `docker compose up -d`
 * Seed data with `yarn seed`
 * View ratel at http://localhost:8000/
-* Start server with `yarn start`
 * Access server at http://localhost:3000/api
 
 ### Notes
@@ -82,6 +81,7 @@ http://localhost:3000/api/suggest/card-e579a72f-4933-40fe-9e57-96f8d65370bc?pric
 
 
 ## Example Queries
+### Paste these queries into ratel. 
 
 Top 10 most used cards, how many combos they're used by, and how many cards they're used with:
 ```

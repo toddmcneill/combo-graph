@@ -28,3 +28,15 @@ services:
     image: dgraph/ratel:v21.12.0
     ports:
       - 8000:8000
+
+  server:
+    build: .
+    command: yarn start
+    volumes:
+      - .:/app
+    environment:
+      SERVER_PORT: 3000
+      DB_HOST: alpha
+      DB_PORT: 9080
+    ports:
+      - "3000:3000"
