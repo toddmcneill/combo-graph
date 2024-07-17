@@ -40,3 +40,20 @@ services:
       DB_PORT: 9080
     ports:
       - "3000:3000"
+
+  client:
+    build: .
+    command: yarn workspace client dev
+    volumes:
+      - .:/app
+    environment:
+      VITE_API_HOST: http://localhost:3000/api
+    ports:
+      - "5173:5173"
+
+  tailwind:
+    build: .
+    command: yarn workspace client tailwind
+    volumes:
+      - .:/app
+    tty: true

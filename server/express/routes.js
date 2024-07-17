@@ -4,7 +4,7 @@ const { suggestCards } = require('../analysis/suggest')
 
 const router = express.Router()
 
-router.get('/centralCommanders', async(req, res) => {
+router.get('/central-commanders', async(req, res) => {
   const { centralCommanders } = await db.getCentralCommanders()
   res.send(centralCommanders)
 })
@@ -16,14 +16,18 @@ router.get('/adjacentCards/:commanderId', async(req, res) => {
 
 router.get('/suggest/:cardId', async(req, res) => {
   const { cardId } = req.params
-  const { cardCount, priceCap, exclude } = req.query
+  const { include, exclude, cardCount, priceCap, preferCompletion } = req.query
 
-  const excludedCardIds = exclude ? exclude.split(',') : []
-  const { cards, combos, features } = await suggestCards(cardId, excludedCardIds, cardCount, priceCap)
+  const { cards, combos, features } = await suggestCards(cardId, {
+    includeCardIds: include ? include.split(',') : [],
+    excludeCardIds: exclude ? exclude.split(',') : [],
+    cardCount,
+    priceCap,
+    preferCompletion
+  })
 
-  const comboCount = combos.length
   const totalPrice = cards.reduce((acc, cur) => acc + cur.price, 0).toFixed(2)
-  res.send({ cards, comboCount, totalPrice, features })
+  res.send({ cards, combos, totalPrice, features })
 })
 
 module.exports = router

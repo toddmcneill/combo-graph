@@ -6,6 +6,9 @@
   "author": "Todd McNeill <toddmcneill@gmail.com>",
   "license": "MIT",
   "private": true,
+  "workspaces": [
+    "client"
+  ],
   "dependencies": {
     "@grpc/grpc-js": "^1.10.10",
     "cors": "^2.8.5",

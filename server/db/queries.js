@@ -116,6 +116,7 @@ async function getCards(cardIds) {
     cards(func: type(Card)) @filter(${dgraph.getFilterList('xid', cardIds)}) {
       id: xid
       name
+      imageUri
       price
     }
   }`
@@ -123,7 +124,28 @@ async function getCards(cardIds) {
   return cards
 }
 
+async function getCombos(comboIds) {
+  const query = `{
+    combos(func: type(Combo)) @filter(${dgraph.getFilterList('xid', comboIds)}) {
+      id: xid
+      name
+      description
+      cards: uses {
+        id: xid
+        name
+        imageUri
+      }
+      features: produces {
+        id: xid
+      }
+    }
+  }`
+  const { combos } = await dgraph.query(query)
+  return combos
+}
+
 async function getFeaturesForCombos(comboIds) {
+  console.log('combo ids in get features: ', comboIds.length, 'sample: ', comboIds.slice(0,5))
   const query = `{
     var(func: type(Combo)) @filter(${dgraph.getFilterList('xid', comboIds)}) {
       paths as math(1)
@@ -148,5 +170,6 @@ module.exports = {
   getColorIdentityOfCard,
   getConnectedCombosAndCardsFromCardIds,
   getCards,
+  getCombos,
   getFeaturesForCombos,
 }

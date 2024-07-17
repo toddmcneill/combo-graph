@@ -2,7 +2,7 @@
 Discover clustering of MTG cards used in combos by using combo data from [commander spellbook](https://backend.commanderspellbook.com/) augmented with card data from [scryfall](https://scryfall.com/docs/api).
 
 ## Usage
-* Install [node v22](https://nodejs.org/en/download/package-manager) and [yarn](https://classic.yarnpkg.com/lang/en/docs/install)
+* Install [node v22](https://nodejs.org/en/download/package-manager) (`nvm use` if [nvm](https://github.com/nvm-sh/nvm?tab=readme-ov-file#installing-and-updating) is installed) and [yarn](https://classic.yarnpkg.com/lang/en/docs/install)
 * Install [docker](https://www.docker.com/get-started)
 * Install dependencies with `yarn`
 * Start dgraph and server with `docker compose up -d`
@@ -17,9 +17,9 @@ You can ignore the cache (and force redownload of all files) by using `yarn seed
 
 ## Endpoints
 
-### /centralCommanders
+### /central-commanders
 #### Usage
-http://localhost:3000/api/centralCommanders
+http://localhost:3000/api/central-commanders
 #### Returns
 The 50 commanders with the highest centrality in their color identity, sorted by the ratio of adjacent combos to adjacent cards.
 ```
@@ -59,7 +59,7 @@ All adjacent cards for a given commander, ordered by the number of combos they s
 
 ### /suggest/:cardId
 #### Query parameters
-* cardCount - How many cards to return. About 5-10 cards can be calculated per second. Default: 70
+* cardCount - How many cards to return. About 5-10 cards can be calculated per second. Default: 20
 * priceCap - Exclude cards over the given price cap and combos that use those cards.
 * exclude - Exclude cards by id, comma-separated.
 #### Usage
@@ -70,14 +70,12 @@ http://localhost:3000/api/suggest/card-e579a72f-4933-40fe-9e57-96f8d65370bc?pric
 #### Returns
 ```
 {
-  cards: [{ id, name, price}] // In the order they were included.
+  cards: [{ id, name, imageUri, price }] // In the order they were included.
   feature: [{ }] // Ordered by the number of paths through complete combos that produce them.
   totalPrice: int
-  comboCount: int // The number of complete combos present in the suggested card set.
+  combos: [{ id, isComplete, uses: [{ id, price, centrality }] }]
 }
 ```
-
-
 
 
 ## Example Queries

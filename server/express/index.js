@@ -29,10 +29,6 @@ app.use((err, req, res, next) => {
   res.send(message)
 })
 
-app.get('/', (req, res) => {
-  res.send('Hello World!')
-})
-
 const server = app.listen(config.SERVER_PORT, () => {
   console.log(`App listening on port ${config.SERVER_PORT}`)
 })
