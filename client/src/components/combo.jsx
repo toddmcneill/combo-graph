@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import Card from './card'
+import Feature from './feature'
 
-function Combo({ cards, description, selectedCardIds, onCardClick }) {
+function Combo({ cards, description, features, selectedCardIds, onCardClick }) {
   const [showDetails, setShowDetails] = useState(false)
 
   return (
     <div>
-      <div className="flex gap-8 items-center">
-        <div className="cursor-pointer" onMouseDown={() => setShowDetails(!showDetails)}>Detials</div>
+      <div className="flex gap-4 items-center">
+        <div className="cursor-pointer text-3xl" onMouseDown={() => setShowDetails(!showDetails)}>👁️</div>
         {
           cards
             .sort((a, b) => a.name < b.name ? -1 : 1)
@@ -16,12 +17,18 @@ function Combo({ cards, description, selectedCardIds, onCardClick }) {
       </div>
       {showDetails && (
         <div className="whitespace-pre-wrap pl-8">
-          <div className="flex gap-4 my-4">{
-            cards.map(card => <Card name={card.name} imageUri={card.imageUri} imageOnly={true} small={true} key={card.id} />)
-          }</div>
-          <ol className="list-decimal">{
-            description.split('\n').map((line, i) => <li key={i}>{replaceCosts(line)}</li>)
-          }</ol>
+          <div className="flex gap-4 my-4">
+            {cards.map(card => <Card name={card.name} imageUri={card.imageUri} imageOnly={true} small={true} key={card.id} />)}
+          </div>
+          <ol className="list-decimal pl-8">
+            {description.split('\n').map((line, i) => <li key={i}>{replaceCosts(line)}</li>)}
+          </ol>
+          <div>
+            <span className="font-bold">Produces:</span>
+            <ul className="list-disc pl-8">
+              {features.map(feature => <li key={feature.id}><Feature name={feature.name} /></li>)}
+            </ul>
+          </div>
         </div>
       )}
     </div>

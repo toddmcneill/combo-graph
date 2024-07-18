@@ -578,12 +578,12 @@ video {
   bottom: 0px;
 }
 
-.top-\[-1\.5rem\] {
-  top: -1.5rem;
-}
-
 .left-\[calc\(50\%-1rem\)\] {
   left: calc(50% - 1rem);
+}
+
+.top-\[-1\.5rem\] {
+  top: -1.5rem;
 }
 
 .col-span-1 {
@@ -671,6 +671,10 @@ video {
   height: 100%;
 }
 
+.min-h-\[600px\] {
+  min-height: 600px;
+}
+
 .w-14 {
   width: 3.5rem;
 }
@@ -709,6 +713,10 @@ video {
 
 .list-decimal {
   list-style-type: decimal;
+}
+
+.list-disc {
+  list-style-type: disc;
 }
 
 .grid-cols-\[minmax\(400px\2c _30\%\)_1fr\] {
@@ -842,6 +850,11 @@ video {
 
 .text-right {
   text-align: right;
+}
+
+.text-3xl {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
 }
 
 .text-6xl {

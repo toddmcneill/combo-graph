@@ -15,7 +15,7 @@ async function suggestCards(
 
   const colorIdentity = await db.getColorIdentityOfCard(rootCardId)
 
-  const suggestedCardIds = [rootCardId, ...includeCardIds]
+  const suggestedCardIds = Array.from(new Set([rootCardId, ...includeCardIds]))
   const suggestedCardSet = new Set(suggestedCardIds)
   let connectedCombos = []
   let areRemainingCards = true
@@ -23,7 +23,7 @@ async function suggestCards(
   let iter = 0
   while (suggestedCardIds.length < cardCount && areRemainingCards) {
     // Find all connected combos from cards so far in the root color identity.
-    connectedCombos = await db.getConnectedCombosAndCardsFromCardIds(suggestedCardIds, colorIdentity, excludeCardIds)
+    connectedCombos = await db.getConnectedCombosAndCardsFromCardIds(suggestedCardIds, colorIdentity)
     console.log('iteration: ', iter, 'connectedCombos: ', connectedCombos.length)
     iter++
 
@@ -94,7 +94,6 @@ async function suggestCards(
   const cardData = await db.getCards(suggestedCardIds)
   const cards = suggestedCardIds.map(cardId => cardData.find(card => card.id === cardId))
   const completeComboIds = connectedCombos.filter(combo => combo.uses?.every(card => suggestedCardSet.has(card.id))).map(combo => combo.id)
-  console.log('complete combo ids: ', completeComboIds.length)
   const combos = await db.getCombos(completeComboIds)
   const features = combos.length ? (await db.getFeaturesForCombos(combos.map(combo => combo.id)))
     .sort((a, b) => a.paths < b.paths ? 1 : -1) : []

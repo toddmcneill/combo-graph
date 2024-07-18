@@ -21,6 +21,10 @@ function Suggestions({ cardId }) {
     preferCompletion
   })
 
+  if (isPending && selectedCardIds.size) {
+    setSelectedCardIds(new Set())
+  }
+
   function toggleSelectedCard(cardId) {
     const newSet = new Set([cardId])
     if (selectedCardIds.has(cardId)) {
@@ -55,7 +59,7 @@ function Suggestions({ cardId }) {
               </div>
             </div>
             <div
-              className={`sticky relative bottom-0 mt-16 p-4 bg-white border-t-2 ${showCombos ? 'h-[40vh]' : 'h-16'}`}>
+              className={`sticky relative bottom-0 mt-16 p-4 bg-white border-t-2 ${showCombos ? 'h-[40vh] min-h-[600px]' : 'h-16'}`}>
               <button
                 className="absolute top-[-1.5rem] left-[calc(50%-1rem)] bg-white border-2 w-8 h-8 flex items-center justify-center m-2"
                 onMouseDown={() => setShowCombos(!showCombos)}
@@ -77,9 +81,9 @@ function Suggestions({ cardId }) {
         <div>
         <label className="flex gap-2">
             <span>Cards:</span>
-            <input className="w-96" type="range" min="5" max="100" step="5" value={cardCount}
+            <input className="w-96" type="range" min="5" max="60" step="5" value={cardCount}
                    onChange={e => setCardCount(e.target.value)}/>
-            <input type="number" className="border-2 w-14 text-center" value={cardCount}
+            <input type="number" className="border-2 w-14 text-center" min="1" max="60" value={cardCount}
                    onInput={(e => setCardCount(e.target.value))}/>
           </label>
           <div className="text-slate-400 text-sm">Suggestions generate at a rate of 5-10 per second</div>
@@ -106,8 +110,8 @@ function Suggestions({ cardId }) {
           <span>Selected Cards:</span>
           <span className="font-bold text-xl">{selectedCardIds.size}</span>
           <button type="button" className="px-2 border-2" onMouseDown={() => setSelectedCardIds(new Set())}>Deselect All</button>
-          <button type="button" className="px-2 border-2" onMouseDown={() => setIncludeCardIds(includeCardIds.union(new Set(selectedCardIds)))}>Add to included</button>
-          <button type="button" className="px-2 border-2" onMouseDown={() => setExcludeCardIds(excludeCardIds.union(new Set(selectedCardIds)))}>Add to excluded</button>
+          <button type="button" className="px-2 border-2" onMouseDown={() => setIncludeCardIds(includeCardIds.union(new Set(selectedCardIds)))}>Include First</button>
+          <button type="button" className="px-2 border-2" onMouseDown={() => setExcludeCardIds(excludeCardIds.union(new Set(selectedCardIds)))}>Exclude</button>
         </div>
       </div>
     )
@@ -142,7 +146,7 @@ function Suggestions({ cardId }) {
         suggestions.combos
           .filter(combo => !selectedCardIds.size || selectedCardIds.values().every(cardId => combo.cards.find(card => card.id === cardId)))
           .map(combo => {
-            return <Combo cards={combo.cards} description={combo.description} selectedCardIds={selectedCardIds} onCardClick={(cardId) => toggleSelectedCard(cardId)} key={combo.id} />
+            return <Combo cards={combo.cards} description={combo.description} features={combo.features} selectedCardIds={selectedCardIds} onCardClick={(cardId) => toggleSelectedCard(cardId)} key={combo.id} />
           })
       }</div>
     )

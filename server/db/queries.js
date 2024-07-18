@@ -87,20 +87,17 @@ async function getColorIdentityOfCard(cardId){
   return q[0].colorIdentity
 }
 
-async function getConnectedCombosAndCardsFromCardIds(cardIds, colorIdentity, excludeCardIds) {
-  const excludeCardFilter = dgraph.getFilterList('xid', excludeCardIds, false, true)
+async function getConnectedCombosAndCardsFromCardIds(cardIds, colorIdentity) {
   const query = `{
     colorIdentity as var(func: type(ColorIdentity)) @filter(eq(colorIdentity, "${sanitizeValue(colorIdentity)}"))
     
     var(func: type(Card)) @filter(${dgraph.getFilterList('xid', cardIds)}) {
-      comboIds as usedBy @filter(uid_in(~containsColorIdentityOf, uid(colorIdentity))) {
-        cardIds as uses @filter(uid_in(~containsColorIdentityOf, uid(colorIdentity))${excludeCardIds.length ? ` AND ${excludeCardFilter}` : ''})
-      }
+      comboIds as usedBy @filter(uid_in(~containsColorIdentityOf, uid(colorIdentity)))
     }
     
     combos(func: uid(comboIds)) {
       id: xid
-      uses @filter(uid(cardIds)) {
+      uses {
         id: xid
         price
         centrality
@@ -112,6 +109,9 @@ async function getConnectedCombosAndCardsFromCardIds(cardIds, colorIdentity, exc
 }
 
 async function getCards(cardIds) {
+  if (!cardIds.length) {
+    return []
+  }
   const query = `{
     cards(func: type(Card)) @filter(${dgraph.getFilterList('xid', cardIds)}) {
       id: xid
@@ -124,7 +124,10 @@ async function getCards(cardIds) {
   return cards
 }
 
-async function getCombos(comboIds) {
+async function getCombos(comboIds){
+  if (!comboIds.length) {
+    return []
+  }
   const query = `{
     combos(func: type(Combo)) @filter(${dgraph.getFilterList('xid', comboIds)}) {
       id: xid
@@ -137,6 +140,7 @@ async function getCombos(comboIds) {
       }
       features: produces {
         id: xid
+        name
       }
     }
   }`
@@ -145,7 +149,9 @@ async function getCombos(comboIds) {
 }
 
 async function getFeaturesForCombos(comboIds) {
-  console.log('combo ids in get features: ', comboIds.length, 'sample: ', comboIds.slice(0,5))
+  if (!comboIds.length) {
+    return []
+  }
   const query = `{
     var(func: type(Combo)) @filter(${dgraph.getFilterList('xid', comboIds)}) {
       paths as math(1)
