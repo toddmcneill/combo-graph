@@ -8,8 +8,12 @@ isCommander: bool @index(bool).
 price: float .
 uncountable: bool .
 description: string .
+prerequisites: string .
+scryfallUrl: string .
 produces: [uid] .
 producedBy: [uid] .
+requires: [uid] .
+requiredBy: [uid] .
 uses: [uid] .
 usedBy: [uid] .
 usedWith: [uid] .
@@ -17,6 +21,8 @@ centrality: float .
 containsColorIdentityOf: [uid] @reverse .
 matchesColorIdentity: [uid] .
 colorAffinity: float .
+commanderCombos: int .
+commanderCards: int .
 
 type Card {
   xid
@@ -30,8 +36,10 @@ type Card {
   usedBy
   usedWith
   centrality
-  colorAffinity
   matchesColorIdentity
+  colorAffinity
+  commanderCombos
+  commanderCards
 }
 
 type Feature {
@@ -41,13 +49,22 @@ type Feature {
   producedBy
 }
 
+type Template {
+  xid
+  name
+  requiredBy
+  scryfallUrl
+}
+
 type Combo {
   xid
   name
   description
+  prerequisites
   colorIdentity
   price
   uses
+  requires
   produces
 }
 

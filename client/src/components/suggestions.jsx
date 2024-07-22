@@ -11,7 +11,7 @@ function Suggestions({ cardId }) {
   let [priceCap, setPriceCap] = useState('')
   let [preferCompletion, setPreferCompletion] = useState(true)
   let [selectedCardIds, setSelectedCardIds] = useState(new Set())
-  let [showCombos, setShowCombos] = useState(true)
+  let [showCombos, setShowCombos] = useState(false)
 
   const { isPending, error, data: suggestions } = api.loadSuggestions(cardId, {
     include: Array.from(includeCardIds),
@@ -49,17 +49,15 @@ function Suggestions({ cardId }) {
                 <h2 className="text-xl">Price: ${suggestions.totalPrice}</h2>
                 <h2 className="text-xl">Combo Count: <span className="font-bold">{suggestions.combos.length}</span></h2>
               </div>
+              {renderFeatures()}
             </div>
-            <div className="grid grid-cols-[minmax(400px,_30%)_1fr] p-4">
-              <div className="col-span-1">
-                {renderFeatures()}
-              </div>
+            <div className="p-4">
               <div className="flex flex-wrap gap-4 justify-around p-4 items-start">
                 {renderCards()}
               </div>
             </div>
             <div
-              className={`sticky relative bottom-0 mt-16 p-4 bg-white border-t-2 ${showCombos ? 'h-[40vh] min-h-[600px]' : 'h-16'}`}>
+              className={`sticky relative bottom-0 mt-16 p-4 bg-white border-t-2 ${showCombos ? 'h-[40vh] min-h-[450px]' : 'h-16'}`}>
               <button
                 className="absolute top-[-1.5rem] left-[calc(50%-1rem)] bg-white border-2 w-8 h-8 flex items-center justify-center m-2"
                 onMouseDown={() => setShowCombos(!showCombos)}
@@ -77,7 +75,7 @@ function Suggestions({ cardId }) {
 
   function renderFilters() {
     return (
-      <div className="flex flex-col gap-4 p-4">
+      <div className="flex gap-8 p-4">
         <div>
         <label className="flex gap-2">
             <span>Cards:</span>
@@ -90,7 +88,7 @@ function Suggestions({ cardId }) {
         </div>
         <div>
           <label className="flex gap-2">
-            <span>Price Cap:</span>
+            <span className="whitespace-nowrap">Price Cap:</span>
             <input type="number" className="border-2" value={priceCap} onInput={e => setPriceCap(e.target.value)}/>
             <button type="button" onMouseDown={() => setPriceCap('')}>Clear</button>
           </label>
@@ -119,7 +117,7 @@ function Suggestions({ cardId }) {
 
   function renderFeatures() {
     return (
-      <div>
+      <div className="flex flex-col flex-wrap justify-around p-4 max-h-48 overflow-auto">
         {suggestions.features.map(feature => <Feature name={feature.name} paths={feature.paths} key={feature.id}/>)}
       </div>
     )
@@ -146,7 +144,18 @@ function Suggestions({ cardId }) {
         suggestions.combos
           .filter(combo => !selectedCardIds.size || selectedCardIds.values().every(cardId => combo.cards.find(card => card.id === cardId)))
           .map(combo => {
-            return <Combo cards={combo.cards} description={combo.description} features={combo.features} selectedCardIds={selectedCardIds} onCardClick={(cardId) => toggleSelectedCard(cardId)} key={combo.id} />
+            return (
+              <Combo
+                cards={combo.cards}
+                description={combo.description}
+                templates={combo.templates}
+                prerequisites={combo.prerequisites}
+                features={combo.features}
+                selectedCardIds={selectedCardIds}
+                onCardClick={(cardId) => toggleSelectedCard(cardId)}
+                key={combo.id}
+              />
+            )
           })
       }</div>
     )

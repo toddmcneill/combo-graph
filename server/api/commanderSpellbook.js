@@ -47,6 +47,16 @@ async function fetchAllFeatures() {
   }))
 }
 
+async function fetchAllTemplates() {
+  const templates = await fetchAll('https://backend.commanderspellbook.com/templates/')
+
+  return templates.map(template => ({
+    id: `template-${template.id}`,
+    name: template.name,
+    scryfallUrl: `https://scryfall.com/search?q=${encodeURIComponent(template.scryfallQuery)}`,
+  }))
+}
+
 async function fetchAllCombos() {
   const combos = await fetchAll('https://backend.commanderspellbook.com/variants/')
 
@@ -54,9 +64,11 @@ async function fetchAllCombos() {
     id: `combo-${combo.id}`,
     name: combo.uses.map(piece => piece.card.name).join(' : '),
     description: combo.description,
+    prerequisites: combo.otherPrerequisites,
     colorIdentity: combo.identity.split('').sort().join(''),
     price: combo.prices.cardkingdom,
     usesCards: combo.uses.map(uses => `card-${uses.card.oracleId}`),
+    requiresTemplates: combo.requires.map(requires => `template-${requires.template.id}`),
     producesFeatures: combo.produces.map(produces => `feature-${produces.feature.id}`),
   }))
 }
@@ -64,5 +76,6 @@ async function fetchAllCombos() {
 module.exports = {
   fetchAllCards,
   fetchAllFeatures,
+  fetchAllTemplates,
   fetchAllCombos,
 }

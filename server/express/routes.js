@@ -5,7 +5,7 @@ const { suggestCards } = require('../analysis/suggest')
 const router = express.Router()
 
 router.get('/central-commanders', async(req, res) => {
-  const { centralCommanders } = await db.getCentralCommanders()
+  const centralCommanders = await db.getCentralCommanders()
   res.send(centralCommanders)
 })
 

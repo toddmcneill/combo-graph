@@ -47,17 +47,27 @@ async function storeData() {
   }))
   console.log('features: ', features.length)
 
+  console.log('Saving Templates (Commander Spellbook)')
+  const templates = await commanderSpellbook.fetchAllTemplates()
+  await dgraph.upsertObjects(templates.map(template => {
+    const { id, name, scryfallUrl } = template
+    return { type: 'Template', id, name, scryfallUrl }
+  }))
+  console.log('templates: ', templates.length)
+
   console.log('Saving Combos (Commander Spellbook)')
   const combos = await commanderSpellbook.fetchAllCombos()
   await dgraph.upsertObjects(combos.map(combo => {
-    const { id, name, description, colorIdentity, price } = combo
-    return { type: 'Combo', id, name, description, colorIdentity, price }
+    const { id, name, description, prerequisites, colorIdentity, price } = combo
+    return { type: 'Combo', id, name, description, prerequisites, colorIdentity, price }
   }))
   console.log('combos: ', combos.length)
 
   console.log('Saving Relationships:')
   console.log('...Uses')
   await db.saveUses(combos)
+  console.log('...Requires')
+  await db.saveRequires(combos)
   console.log('...Produces')
   await db.saveProduces(combos)
   console.log('...Used With')
@@ -96,6 +106,15 @@ async function analyze() {
   await dgraph.updateObjects(Object.entries(colorAffinityByCommanderId).map(([commanderId, colorAffinity]) => ({
     id: commanderId,
     colorAffinity,
+  })))
+
+  console.log('Calculating Commander Combo Ratios')
+  const commanderComboRatios = await colorAffinity.calculateCommanderComboRatio()
+  console.log('Saving Commander Combo Ratios')
+  await dgraph.updateObjects(commanderComboRatios.map(({ id, combos, cards }) => ({
+    id,
+    commanderCombos: combos,
+    commanderCards: cards,
   })))
 }
 

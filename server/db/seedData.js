@@ -12,6 +12,18 @@ function saveUses(combos) {
   return dgraph.createEdges(edges)
 }
 
+function saveRequires(combos) {
+  const edges = combos.flatMap(combo => {
+    return combo.requiresTemplates.flatMap(templateId => {
+      return [
+        [combo.id, 'requires', templateId],
+        [templateId, 'requiredBy', combo.id]
+      ]
+    })
+  })
+  return dgraph.createEdges(edges)
+}
+
 function saveProduces(combos) {
   const edges = combos.flatMap(combo => {
     return combo.producesFeatures.flatMap(featureId => {
@@ -55,6 +67,7 @@ function saveMatchesColorIdentity(nodesInIdentityByCommanderId) {
 
 module.exports = {
   saveUses,
+  saveRequires,
   saveProduces,
   saveUsedWith,
   saveContainsColorIdentityOf,

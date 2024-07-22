@@ -20,12 +20,9 @@ async function suggestCards(
   let connectedCombos = []
   let areRemainingCards = true
 
-  let iter = 0
   while (suggestedCardIds.length < cardCount && areRemainingCards) {
     // Find all connected combos from cards so far in the root color identity.
     connectedCombos = await db.getConnectedCombosAndCardsFromCardIds(suggestedCardIds, colorIdentity)
-    console.log('iteration: ', iter, 'connectedCombos: ', connectedCombos.length)
-    iter++
 
     // Filter for incomplete connected combos and combos that use excluded cards.
     const filteredCombos = connectedCombos.filter(combo => {

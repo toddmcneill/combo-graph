@@ -153,9 +153,45 @@ async function calculateCommanderColorAffinity() {
   return colorAffinityByCommanderId
 }
 
+async function calculateCommanderComboRatio() {
+  const commanderQuery = `{
+    commanders(func: eq(isCommander, true)) {
+      id: xid
+    }
+  }`
+  const { commanders } = await dgraph.query(commanderQuery)
+  const commanderData = await Promise.all(commanders.map(async (commander) => {
+    const query = `{
+      commanderNode as var(func: eq(isCommander, true)) @filter(eq(xid, "${commander.id}")) {
+        ci as matchesColorIdentity
+      }
+      
+      var(func: uid(commanderNode)) {
+        combos as count(usedBy) @filter(uid_in(~containsColorIdentityOf, uid(ci)))
+        comboNode as usedBy @filter(uid_in(~containsColorIdentityOf, uid(ci)))
+      }
+      
+      var(func: uid(commanderNode)) {
+        cards as count(usedWith) @filter(uid_in(usedBy, uid(comboNode)))
+      }
+      
+      q(func: uid(commanderNode)) {
+        id: xid
+        combos: val(combos)
+        cards: val(cards)
+      }
+    }`
+    const { q } = await dgraph.query(query)
+    return q
+  }))
+
+  return commanderData.flat()
+}
+
 module.exports = {
   getAllColorCombinations,
   calculateNodesInIdentityByColorIdentity,
   calculateNodesMatchingColorIdentity,
-  calculateCommanderColorAffinity
+  calculateCommanderColorAffinity,
+  calculateCommanderComboRatio
 }

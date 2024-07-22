@@ -46,12 +46,12 @@ function App() {
   return (
     <>
       <div className="bg-slate-100">
-        <div>
-          <Link href="/">
-            <h1 className="text-6xl font-semibold flex gap-8 items-center justify-center">
-              <div className="inline-block w-32">
-                <img src={comboGraphLogo} alt="Combo Graph Logo"/>
-              </div>
+        <div className="flex">
+          <Link href="/" className="flex gap-8 items-center">
+            <div className="inline-block w-24">
+              <img src={comboGraphLogo} alt="Combo Graph Logo"/>
+            </div>
+            <h1 className="text-4xl font-semibold">
               Combo Graph
             </h1>
           </Link>

@@ -4,35 +4,25 @@ const { sanitizeValue } = dgraph
 async function getCentralCommanders() {
   const query = `{
     node as var(func: eq(isCommander, true)) {
-      combos1 as count(usedBy)
-      cards1 as count(usedWith)
-      usedWith {
-        combosInner as count(usedBy)
-        cardsInner as count(usedWith)
-      }
-      combos2 as sum(val(combosInner))
-      cards2 as sum(val(cardsInner))
-      ratio1 as math(combos1 / max(cards1, 1.0))
-      ratio2 as math((combos1 + combos2) / max((cards1 + cards2), 1.0))
+      combos as commanderCombos
+      cards as commanderCards
+      ratio as math(combos / max(cards, 1.0))
     }
-      
-    top50 as var(func: uid(node), orderdesc: colorAffinity, first: 50)
-      
-    centralCommanders(func: uid(top50), orderdesc: val(ratio1)) {
+    
+    centralCommanders(func: uid(node), orderdesc: val(ratio)) {
       id: xid
       name
       colorIdentity
       oracleText
       imageUri
-      comboCount1: val(combos1)
-      adjacentCards1: val(cards1)
-      comboCount2: val(combos2)
-      adjacentCards2: val(cards2)
-      ratio1: val(ratio1)
-      ratio2: val(ratio2)
+      colorAffinity
+      commanderCombos
+      commanderCards
+      ratio: val(ratio)
     }
   }`
-  return dgraph.query(query)
+  const { centralCommanders } = await dgraph.query(query)
+  return centralCommanders
 }
 
 async function getAdjacentCardsByCommander(commanderId) {
@@ -133,10 +123,16 @@ async function getCombos(comboIds){
       id: xid
       name
       description
+      prerequisites
       cards: uses {
         id: xid
         name
         imageUri
+      }
+      templates: requires {
+        id: xid
+        name
+        scryfallUrl
       }
       features: produces {
         id: xid

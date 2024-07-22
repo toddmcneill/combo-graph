@@ -2,7 +2,7 @@ import { useState } from 'react'
 import Card from './card'
 import Feature from './feature'
 
-function Combo({ cards, description, features, selectedCardIds, onCardClick }) {
+function Combo({ cards, description, templates, prerequisites, features, selectedCardIds, onCardClick }) {
   const [showDetails, setShowDetails] = useState(false)
 
   return (
@@ -14,15 +14,37 @@ function Combo({ cards, description, features, selectedCardIds, onCardClick }) {
             .sort((a, b) => a.name < b.name ? -1 : 1)
             .map(card => <span className={`text-xl px-2 rounded-full border-2 cursor-pointer ${selectedCardIds.has(card.id) ? 'bg-slate-600 text-white' : ''}`} onMouseDown={() => onCardClick(card.id)} key={card.id}>{card.name}</span>)
         }
+        {
+          !!templates && templates.map(template => <span className="text-slate-400" key={template.id}>{template.name}</span>)
+        }
       </div>
       {showDetails && (
-        <div className="whitespace-pre-wrap pl-8">
+        <div className="pl-8 flex flex-col gap-2">
           <div className="flex gap-4 my-4">
-            {cards.map(card => <Card name={card.name} imageUri={card.imageUri} imageOnly={true} small={true} key={card.id} />)}
+            {cards.map(card => <Card name={card.name} imageUri={card.imageUri} imageOnly={true} small={true} key={card.id}/>)}
           </div>
-          <ol className="list-decimal pl-8">
-            {description.split('\n').map((line, i) => <li key={i}>{replaceCosts(line)}</li>)}
-          </ol>
+          {!!templates && (
+            <div>
+              <span className="font-bold">Requirements:</span>
+              <ul className="list-disc pl-8">
+                {templates.map(template => <li key={template.id}><a href={template.scryfallUrl} target="_blank" className="underline">{replaceCosts(template.name)}</a></li>)}
+              </ul>
+            </div>
+          )}
+          {!!prerequisites && (
+            <div>
+              <span className="font-bold">Prerequisites:</span>
+              <ul className="list-disc pl-8">
+                {prerequisites.split('\n').map((line, i) => <li key={i}>{replaceCosts(line)}</li>)}
+              </ul>
+            </div>
+          )}
+          <div>
+            <span className="font-bold">Steps:</span>
+            <ol className="list-decimal pl-8">
+              {description.split('\n').map((line, i) => <li key={i}>{replaceCosts(line)}</li>)}
+            </ol>
+          </div>
           <div>
             <span className="font-bold">Produces:</span>
             <ul className="list-disc pl-8">
