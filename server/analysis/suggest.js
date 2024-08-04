@@ -11,8 +11,6 @@ async function suggestCards(
     preferCompletion = false
   }
 ) {
-  console.log({ rootCardId, includeCardIds, excludeCardIds, cardCount, priceCap, preferCompletion })
-
   const colorIdentity = await db.getColorIdentityOfCard(rootCardId)
 
   const suggestedCardIds = Array.from(new Set([rootCardId, ...includeCardIds]))

@@ -52,6 +52,12 @@ function Suggestions({ cardId }) {
               {renderFeatures()}
             </div>
             <div className="p-4">
+              <button
+                className="border-2 px-2"
+                onClick={() => { navigator.clipboard.writeText(suggestions.cards.map(card => card.name).join('\n')) }}
+              >
+                Copy Card List
+              </button>
               <div className="flex flex-wrap gap-4 justify-around p-4 items-start">
                 {renderCards()}
               </div>
